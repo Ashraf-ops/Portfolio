@@ -347,7 +347,7 @@ if(er.length){m.className="cmsg bad";m.textContent=er.join(" ");return}if($("#bh
 bfBusy=true;b.disabled=true;m.textContent="Sending…";
 try{const r=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({name:v("bn"),email:v("be"),subject:"Project enquiry",message:v("bm"),_subject:"Portfolio message: Project enquiry",_replyto:v("be"),_template:"table",_captcha:"false"})});
 const j=await r.json().catch(()=>({}));
-if(r.ok&&String(j.success)==="true"){m.className="cmsg ok";m.textContent="Thank you! Your message was sent. A reply will go to "+v("be")+".";$("#bf").reset()}else throw new Error(j.message||"the mail service did not accept it")}
+if(r.ok&&String(j.success)==="true"){m.className="cmsg ok";m.textContent="Thank you! Your message was sent.";$("#bf").reset()}else throw new Error(j.message||"the mail service did not accept it")}
 catch(x){m.className="cmsg bad";m.innerHTML=`Your message could not be sent (${esc(x.message)}). <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${P.email}&su=${encodeURIComponent("Project enquiry")}&body=${encodeURIComponent(v("bm")+"\n\n"+v("bn")+" ("+v("be")+")")}" target="_blank" rel="noopener">Click here to email me instead</a>.`}
 finally{b.disabled=false;bfBusy=false}};
 $("#bf .send").addEventListener("click",sendBf);
