@@ -180,6 +180,48 @@ header{padding-top:calc(16px + env(safe-area-inset-top,0px))}
 .fbot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;margin-top:36px;color:var(--mute);font-size:14px}
 .ftop{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:8px 18px}.ftop:hover{border-color:var(--m);color:var(--fg)}
 @media(max-width:900px){.fgrid{grid-template-columns:1fr 1fr}.fb{grid-column:1/-1}}
+.hero{min-height:100vh;min-height:100svh;display:flex;align-items:center;padding:100px 0 40px!important}.hero>.wrap{width:100%}
+@media(max-width:900px){.hero{min-height:auto;padding:100px 0 48px!important}}
+
+/* ===== light scroll effects (GPU-friendly) ===== */
+#sp{position:fixed;left:0;top:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#8B5CF6,#D946EF,#FB923C);z-index:100;pointer-events:none;will-change:transform}
+.blob{position:fixed;z-index:-1;border-radius:50%;pointer-events:none}
+.b1{width:600px;height:600px;left:-250px;top:15%;background:radial-gradient(closest-side,#7C3AED33,transparent)}
+.b2{width:560px;height:560px;right:-220px;top:55%;background:radial-gradient(closest-side,#D946EF26,transparent)}
+.dots{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.dots i{position:absolute;width:3px;height:3px;border-radius:50%;background:#A78BFA;opacity:0;animation:tw 4s ease-in-out infinite;animation-delay:var(--t)}
+.dots i:nth-child(3n){background:#D946EF}.dots i:nth-child(4n){background:#FB923C}
+@keyframes tw{50%{opacity:.8}}
+.js-fx .rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease-out,transform .7s ease-out;transition-delay:var(--d,0ms)}
+.js-fx .rv.rl{transform:translateX(-26px)}
+.js-fx .rv.rv-in{opacity:1;transform:none}
+.pgrid li{animation:none!important}
+.eyebrow span{animation:pulse 2s ease-in-out infinite}@keyframes pulse{50%{opacity:.4}}
+@media(prefers-reduced-motion:reduce){.js-fx .rv{opacity:1;transform:none;transition:none}.dots i,.eyebrow span{animation:none}}
+/* a little extra motion (transform/opacity only) */
+.blob{will-change:transform}
+.b1{animation:bl1 24s ease-in-out infinite}.b2{animation:bl2 28s ease-in-out infinite}
+@keyframes bl1{50%{transform:translate3d(60px,-50px,0)}}@keyframes bl2{50%{transform:translate3d(-60px,40px,0)}}
+.js-fx .rv{transform:translateY(30px) scale(.97)}.js-fx .rv.rl{transform:translateX(-30px)}.js-fx .rv.rv-in{transform:none}
+.me{animation:drift 7s ease-in-out infinite}
+.dots i{width:4px;height:4px}
+.ach li:hover,.card:hover,.ec:hover{transform:translateY(-3px)}
+@media(prefers-reduced-motion:reduce){.blob,.me{animation:none}}
+/* hero text further left */
+.hero>.wrap{max-width:none;padding:0 clamp(20px,9vw,200px)}
+@media(max-width:900px){.hero>.wrap{padding:0 20px}}
+/* more motion, still cheap */
+.obox:before{content:"";position:absolute;left:16%;top:16%;width:68%;height:68%;border-radius:50%;border:2px solid #8B5CF6;opacity:0;animation:ring 3.5s ease-out infinite;pointer-events:none}
+@keyframes ring{0%{transform:scale(1);opacity:.55}100%{transform:scale(1.35);opacity:0}}
+.hero .h1 .gt:first-child{background-size:200% 100%;animation:shine 7s linear infinite}@keyframes shine{to{background-position:-200% 0}}
+.pill{transition:transform .25s,filter .25s,box-shadow .25s}.pill:hover{transform:translateY(-3px);box-shadow:0 10px 26px -8px #8B5CF6aa}
+#links a{transition:color .2s,background .2s,transform .2s}#links a:hover{transform:translateY(-1px)}
+.js-fx .rv{transform:translateY(42px) scale(.96);transition-duration:.9s}.js-fx .rv.rl{transform:translateX(-42px)}.js-fx .rv.rv-in{transform:none}
+.tline li:before{animation:pulse 2.4s ease-in-out infinite}
+.b3{width:480px;height:480px;left:35%;bottom:-200px;background:radial-gradient(closest-side,#FB923C1f,transparent);animation:bl1 30s ease-in-out infinite reverse;will-change:transform}
+@media(prefers-reduced-motion:reduce){.obox:before,.hero .h1 .gt:first-child,.tline li:before,.b3{animation:none}}
+/* photo stays still (no up/down); ring + orbit keep working */
+.me{animation:none!important}
 </style>
 </head>
 <body>
@@ -354,5 +396,28 @@ $("#bf .send").addEventListener("click",sendBf);
 $("#bf").addEventListener("submit",e=>e.preventDefault());
 ["#bn","#be"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();sendBf()}}));
 </script>
+<script>
+(()=>{const d=document,r=d.documentElement,rm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const sp=d.createElement("div");sp.id="sp";d.body.prepend(sp);
+let tk=0;const upd=()=>{tk=0;const h=r.scrollHeight-innerHeight;sp.style.transform="scaleX("+(h>0?scrollY/h:0)+")"};
+addEventListener("scroll",()=>{if(!tk)tk=requestAnimationFrame(upd)},{passive:true});upd();
+if(rm)return;
+["b1","b2","b3"].forEach(c=>{const b=d.createElement("div");b.className="blob "+c;d.body.prepend(b)});
+const dt=d.createElement("div");dt.className="dots";
+for(let i=0;i<(innerWidth<700?24:44);i++){const e=d.createElement("i");e.style.left=Math.random()*100+"%";e.style.top=Math.random()*100+"%";e.style.setProperty("--t",(Math.random()*4).toFixed(2)+"s");dt.appendChild(e)}
+d.body.prepend(dt);
+r.classList.add("js-fx");
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const t=e.target;t.classList.add("rv-in");io.unobserve(t);
+setTimeout(()=>{t.classList.remove("rv","rl","rv-in");t.style.removeProperty("--d")},1200)}}),{threshold:.1,rootMargin:"0px 0px -5% 0px"});
+const SEL=".ab-head,.ab-p,.ach li,.tline li,.ec,.tfil,.tr,.tcol>h3,.pgrid li,.card,.cf,.contact>*";
+const seen=new WeakSet();
+function scan(){d.querySelectorAll("main .ab-head,main .ab-p,main .ach li,main .tline li,main .ec,main .tfil,main .tr,main .tcol>h3,main .pgrid li,main .card,main .cf,main .contact>*").forEach(el=>{
+if(seen.has(el)||el.closest(".hero"))return;seen.add(el);
+const i=[...el.parentElement.children].indexOf(el);el.style.setProperty("--d",Math.min(i,6)*70+"ms");
+el.classList.add("rv");if(el.matches(".tline li"))el.classList.add("rl");io.observe(el)})}
+scan();new MutationObserver(scan).observe(d.querySelector("main"),{childList:true,subtree:true});
+})();
+</script>
+
 </body>
 </html>
