@@ -387,16 +387,16 @@ $("#svc").innerHTML=SVC.map(s=>`<li class="sv" tabindex="0"><span class="sv-ic" 
 document.querySelectorAll(".sv").forEach(el=>el.addEventListener("click",e=>{if(e.target.closest("a"))return;const o=el.classList.contains("on");document.querySelectorAll(".sv.on").forEach(x=>x.classList.remove("on"));if(!o)el.classList.add("on")}));
 const MQ=["AWS","Google Cloud","Azure","Terraform","Kubernetes","Docker","GitHub Actions","Ansible","Git","Prometheus","Grafana","Linux","Python","MySQL","PostgreSQL","MongoDB"];
 $("#mq").innerHTML=[0,1].map(()=>MQ.map(t=>`<span>${esc(t)}</span>`).join("")).join("");
-let bfBusy=false;const sendBf=async()=>{if(bfBusy)return;const v=k=>$("#"+k).value.trim(),m=$("#bmsg"),b=$("#bf .send"),er=[];m.className="cmsg";m.textContent="";
+let bfBusy=false;const why=[];const sendBf=async()=>{if(bfBusy)return;const v=k=>$("#"+k).value.trim(),m=$("#bmsg"),b=$("#bf .send"),er=[];m.className="cmsg";m.textContent="";
 if(v("bn").length<2)er.push("Enter your name.");if(!/^\S+@\S+\.\S+$/.test(v("be")))er.push("Enter a valid email address.");if(v("bm").length<3)er.push("Please write a short message.");
 if(er.length){m.className="cmsg bad";m.textContent=er.join(" ");return}if($("#bh").value)return;
-bfBusy=true;b.disabled=true;b.style.opacity=".6";m.textContent="Sending…";m.scrollIntoView({block:"nearest",behavior:"smooth"});
+why.length=0;bfBusy=true;b.disabled=true;b.style.opacity=".6";m.textContent="Sending…";m.scrollIntoView({block:"nearest",behavior:"smooth"});
 try{const d={name:v("bn"),email:v("be"),message:v("bm"),subject:"Portfolio enquiry"};
 /* simple (no-preflight) requests: FormData avoids the CORS preflight that caused "Failed to fetch" */
 const fd=(o)=>{const f=new FormData();Object.keys(o).forEach(k=>f.append(k,o[k]));return f};
 const post=async(url,obj,ms)=>{const ac=new AbortController(),t=setTimeout(()=>ac.abort(),ms);
 try{const r=await fetch(url,{method:"POST",body:fd(obj),headers:{Accept:"application/json"},signal:ac.signal});
-const j=await r.json().catch(()=>({}));if(r.ok&&String(j.success)!=="false")return true;throw new Error(j.message||"rejected")}finally{clearTimeout(t)}};
+const j=await r.json().catch(()=>({}));if(r.ok&&String(j.success)==="true")return true;throw new Error(j.message||("HTTP "+r.status))}catch(e){why.push(String(e.message||e));throw e}finally{clearTimeout(t)}};
 /* last resort: classic form post into a hidden iframe (no CORS involved, cannot fail with "Failed to fetch") */
 const viaFrame=(url,obj)=>new Promise(res=>{const n="f"+Date.now(),ifr=document.createElement("iframe");ifr.name=n;ifr.style.display="none";
 const f=document.createElement("form");f.method="POST";f.action=url.replace("/ajax/","/");f.target=n;f.style.display="none";
@@ -408,10 +408,9 @@ if(FORMSPREE_URL)t.push(post(FORMSPREE_URL,{...d,_replyto:d.email},5000));
 t.push(post(ENDPOINT,{...d,_subject:"Portfolio enquiry",_replyto:d.email,_template:"table",_captcha:"false"},6000));return t};
 const race=()=>new Promise((res,rej)=>{const t=mk();let n=t.length;t.forEach(p=>p.then(()=>res(true),()=>{if(--n===0)rej()}))});
 let ok=false;try{ok=await race()}catch(_){try{await new Promise(r=>setTimeout(r,300));ok=await race()}catch(_){}}
-if(!ok){ok=await viaFrame(ENDPOINT,{...d,_subject:"Portfolio enquiry",_replyto:d.email,_template:"table",_captcha:"false",_next:location.href})}
 if(!ok)throw new Error("network");
 m.className="cmsg ok";m.textContent="Thank you! Your message was sent.";$("#bf").reset()}
-catch(x){m.className="cmsg bad";m.innerHTML=`Couldn’t send right now. <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${P.email}&su=${encodeURIComponent("Portfolio enquiry")}&body=${encodeURIComponent(v("bm")+"\n\n"+v("bn")+" ("+v("be")+")")}" target="_blank" rel="noopener">Click here to email me instead</a> (your message is pre-filled).`}
+catch(x){m.className="cmsg bad";m.innerHTML=`Couldn’t send right now${why.length?" ("+esc(why[why.length-1].slice(0,120))+")":""}. <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${P.email}&su=${encodeURIComponent("Portfolio enquiry")}&body=${encodeURIComponent(v("bm")+"\n\n"+v("bn")+" ("+v("be")+")")}" target="_blank" rel="noopener">Click here to email me instead</a> (your message is pre-filled).`}
 finally{b.disabled=false;b.style.opacity="";bfBusy=false;m.scrollIntoView({block:"nearest",behavior:"smooth"})}};
 $("#bf .send").addEventListener("click",sendBf);
 $("#bf").addEventListener("submit",e=>e.preventDefault());
